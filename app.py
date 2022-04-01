@@ -1,39 +1,34 @@
-import dash
-import dash_core_components as dcc
-import dash_html_components as html
-from dash.dependencies import Input, Output
-from flask import Flask
-import os
+# Run this app with `python app.py` and
+# visit http://127.0.0.1:8050/ in your web browser.
 
-server = Flask(__name__)
-server.secret_key = os.environ.get('secret_key', 'secret')
-app = dash.Dash(name = __name__, server = server)
-app.config.supress_callback_exceptions = True
+from dash import Dash, html, dcc
+import plotly.express as px
+import pandas as pd
+
+app = Dash(__name__)
+
+# assume you have a "long-form" data frame
+# see https://plotly.com/python/px-arguments/ for more options
+df = pd.DataFrame({
+    "Fruit": ["Apples", "Oranges", "Bananas", "Apples", "Oranges", "Bananas"],
+    "Amount": [4, 1, 2, 2, 4, 5],
+    "City": ["SF", "SF", "SF", "Montreal", "Montreal", "Montreal"]
+})
+
+fig = px.bar(df, x="Fruit", y="Amount", color="City", barmode="group")
 
 app.layout = html.Div(children=[
     html.H1(children='Hello Dash'),
+
     html.Div(children='''
-        Dash: A web application framework for Python.
+        Dash: A web application framework for your data.
     '''),
+
     dcc.Graph(
-        id='example-graph',    
-        figure={
-            'data': [
-                {'x': [1, 2, 3], 'y': [4, 1, 2], 'type': 'bar', 'name': 'SF'},
-                {'x': [1, 2, 3], 'y': [2, 4, 5], 'type': 'bar', 'name': u'Montréal'},
-            ],
-            'layout': {
-                'title': 'Dash Data Visualization'
-            }
-        }
-    ),
-    dcc.Input(id='my-id', value='initial value', type="text"),
-    html.Div(id='my-div')
+        id='example-graph',
+        figure=fig
+    )
 ])
 
-@app.callback(
-    Output(component_id='my-div', component_property='children'),
-    [Input(component_id='my-id', component_property='value')]
-)
-def update_output_div(input_value):
-    return 'You\'ve entered "{}"'.format(input_value)
+if __name__ == '__main__':
+    app.run_server(debug=True)
